@@ -4,7 +4,7 @@ defmodule TodoApp.TodoServerTest do
   alias TodoApp.{TodoServer, TodoEntry}
 
   setup do
-    {:ok, server} = TodoServer.start_link
+    {:ok, server} = TodoServer.start_link("test-list")
     {:ok, server: server}
   end
 

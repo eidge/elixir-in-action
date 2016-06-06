@@ -1,18 +1,19 @@
 defmodule TodoApp.TodoServer do
   use GenServer
 
-  alias TodoApp.TodoList
+  alias TodoApp.{TodoList, Database}
 
-  def start do
-    GenServer.start(__MODULE__, nil)
+  def start(name) do
+    GenServer.start(__MODULE__, name)
   end
 
-  def start_link do
-    GenServer.start_link(__MODULE__, nil)
+  def start_link(name) do
+    GenServer.start_link(__MODULE__, name)
   end
 
-  def init(_) do
-    {:ok, TodoList.new}
+  def init(name) do
+    todo_list = Database.get(name) || TodoList.new
+    {:ok, {name, todo_list}}
   end
 
   def entries(pid) do
@@ -33,19 +34,25 @@ defmodule TodoApp.TodoServer do
 
   # Server Callbacks
 
-  def handle_call(:entries, _, todo_list) do
-    {:reply, TodoList.entries(todo_list), todo_list}
+  def handle_call(:entries, _, {name, todo_list}) do
+    {:reply, TodoList.entries(todo_list), {name, todo_list}}
   end
 
-  def handle_cast({:add_entry, entry}, todo_list) do
-    {:noreply, TodoList.add_entry(todo_list, entry)}
+  def handle_cast({:add_entry, entry}, {name, todo_list}) do
+    new_list = TodoList.add_entry(todo_list, entry)
+    Database.store(name, new_list)
+    {:noreply, {name, new_list}}
   end
 
-  def handle_cast({:update_entry, id, update_fn}, todo_list) do
-    {:noreply, TodoList.update_entry(todo_list, id, update_fn)}
+  def handle_cast({:update_entry, id, update_fn}, {name, todo_list}) do
+    new_list = TodoList.update_entry(todo_list, id, update_fn)
+    Database.store(name, new_list)
+    {:noreply, {name, new_list}}
   end
 
-  def handle_cast({:delete_entry, id}, todo_list) do
-    {:noreply, TodoList.delete_entry(todo_list, id)}
+  def handle_cast({:delete_entry, id}, {name, todo_list}) do
+    new_list = TodoList.delete_entry(todo_list, id)
+    Database.store(name, new_list)
+    {:noreply, {name, new_list}}
   end
 end
