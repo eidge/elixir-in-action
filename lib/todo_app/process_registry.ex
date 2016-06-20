@@ -13,7 +13,7 @@ defmodule TodoApp.ProcessRegistry do
 
   def init(_) do
     IO.puts "Starting ProcessRegistry"
-    {:ok, HashDict.new}
+    {:ok, nil}
   end
 
   def register_name(key, pid) do
@@ -21,7 +21,14 @@ defmodule TodoApp.ProcessRegistry do
   end
 
   def whereis_name(key) do
-    GenServer.call(__MODULE__, {:whereis_name, key})
+    case lookup(key) do
+      [{^key, pid}] -> pid
+      [] -> :undefined
+    end
+  end
+
+  defp lookup(key) do
+    :ets.lookup(__MODULE__, key)
   end
 
   def send(key, message) do
@@ -33,29 +40,27 @@ defmodule TodoApp.ProcessRegistry do
     end
   end
 
-  def handle_call({:register_name, key, pid}, _, process_registry) do
-    case HashDict.get(process_registry, key) do
-      nil ->
+  def handle_call({:register_name, key, pid}, _, nil) do
+    case whereis_name(key) do
+      :undefined ->
         Process.monitor(pid)
-        {:reply, :yes, HashDict.put(process_registry, key, pid)}
+        insert(key, pid)
+        {:reply, :yes, nil}
       _ ->
-        {:reply, :no, process_registry}
+        {:reply, :no, nil}
     end
   end
 
-  def handle_call({:whereis_name, key}, _, process_registry) do
-    {:reply, HashDict.get(process_registry, key, :undefined), process_registry}
+  defp insert(key, pid) do
+    :ets.insert(__MODULE__, {key, pid})
   end
 
-  def handle_info({:DOWN, _, :process, pid, _}, process_registry) do
-    pid_key = find_key_from_pid(process_registry, pid)
-    {:noreply, HashDict.delete(process_registry, pid_key)}
+  def handle_info({:DOWN, _, :process, pid, _}, nil) do
+    delete_pid(pid)
+    {:noreply, nil}
   end
 
-  defp find_key_from_pid(process_registry, pid) do
-    {key, _} = Enum.find(process_registry, fn({_, pid_in_registry}) ->
-      pid_in_registry == pid
-    end)
-    key
+  defp delete_pid(pid) do
+    :ets.match_delete(__MODULE__, {:_, pid})
   end
 end

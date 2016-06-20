@@ -6,6 +6,7 @@ defmodule TodoApp.Supervisor do
   end
 
   def init(_) do
+    :ets.new(TodoApp.ProcessRegistry, [:set, :public, :named_table])
     processes = [
       worker(TodoApp.ProcessRegistry, []),
       supervisor(TodoApp.SystemSupervisor, []),
