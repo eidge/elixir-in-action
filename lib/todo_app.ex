@@ -2,6 +2,8 @@ defmodule TodoApp do
   use Application
 
   def start(_, _) do
-    TodoApp.Supervisor.start_link
+    application = TodoApp.Supervisor.start_link
+    TodoApp.Web.start_server
+    application
   end
 end
