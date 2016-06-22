@@ -4,7 +4,6 @@ defmodule TodoApp.DatabaseTest do
   alias TodoApp.Database
 
   setup do
-    Database.start("./persist")
     Database.store("existing-record", "some data")
     :ok
   end

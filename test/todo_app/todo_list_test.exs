@@ -78,7 +78,6 @@ defmodule TodoApp.TodoListTest do
   test "delete_entry/2 returns current list when trying to delete a non existing id",
       %{new_entry: new_entry} do
     list = TodoList.new |> TodoList.add_entry(new_entry)
-    entry = list |> TodoList.entries |> List.first
     new_entries = TodoList.delete_entry(list, -1) |> TodoList.entries
     assert length(new_entries) == 1
   end

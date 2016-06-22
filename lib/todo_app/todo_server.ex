@@ -8,11 +8,11 @@ defmodule TodoApp.TodoServer do
   end
 
   defp via_tuple(name) do
-    {:via, TodoApp.ProcessRegistry, {:todo_server, name}}
+    {:via, :gproc, {:n, :l, {:todo_server, name}}}
   end
 
   def whereis(name) do
-    TodoApp.ProcessRegistry.whereis_name({:todo_server, name})
+    :gproc.whereis_name({:n, :l, {:todo_server, name}})
   end
 
   def init(name) do

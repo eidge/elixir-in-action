@@ -7,7 +7,7 @@ defmodule TodoApp.Database.Worker do
   end
 
   defp via_tuple(worker_id) do
-    {:via, TodoApp.ProcessRegistry, {:db_worker, worker_id}}
+    {:via, :gproc, {:n, :l, {:db_worker, worker_id}}}
   end
 
   def init(db_folder) do

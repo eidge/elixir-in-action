@@ -4,7 +4,7 @@ defmodule TodoApp.TodoServerTest do
   alias TodoApp.{TodoServer, TodoEntry}
 
   setup do
-    {:ok, server} = TodoServer.start_link("test-list")
+    {:ok, server} = TodoServer.start_link(random_name)
     {:ok, server: server}
   end
 
@@ -35,5 +35,9 @@ defmodule TodoApp.TodoServerTest do
     entry = TodoServer.entries(server) |> List.first
     TodoServer.delete_entry(server, entry.id)
     assert TodoServer.entries(server) |> length == 0
+  end
+
+  defp random_name do
+    Base.url_encode64(inspect :rand.normal)
   end
 end

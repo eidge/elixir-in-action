@@ -6,11 +6,11 @@ defmodule TodoApp.Supervisor do
   end
 
   def init(_) do
-    :ets.new(TodoApp.ProcessRegistry, [:set, :public, :named_table])
     processes = [
-      worker(TodoApp.ProcessRegistry, []),
-      supervisor(TodoApp.SystemSupervisor, []),
+      supervisor(TodoApp.Database, ["./persist"]),
+      supervisor(TodoApp.TodoServerSupervisor, []),
+      worker(TodoApp.TodoCache, [])
     ]
-    supervise(processes, strategy: :rest_for_one)
+    supervise(processes, strategy: :one_for_one)
   end
 end
