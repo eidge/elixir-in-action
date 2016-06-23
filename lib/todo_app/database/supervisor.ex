@@ -16,7 +16,12 @@ defmodule TodoApp.Database.Supervisor do
     supervise(processes, strategy: :one_for_one)
   end
 
+  defp directory_name(db_folder) do
+    node_name = Node.self |> Atom.to_string |>  String.split("@") |> List.first
+    "#{db_folder}/#{node_name}"
+  end
+
   defp ensure_directory_exists(db_folder) do
-    :ok = File.mkdir_p(db_folder)
+    :ok = db_folder |> directory_name |> File.mkdir_p
   end
 end
